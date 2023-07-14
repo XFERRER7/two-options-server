@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id      String   @id @default(uuid())
+  title   String
+  options Option[]
+  users   User[]
+
+  @@map("session")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  name              String
+  role              String
+  sessionId         String?
+  session           Session? @relation(fields: [sessionId], references: [id])
+  sent_options     Option[] @relation("sent_options")
+  received_options Option[] @relation("received_options")
+
+  @@map("user")
+}
+
+model Option {
+  id        String @id @default(uuid())
+  text      String
+  sessionId String
+
+  sender    User @relation("sent_options", fields: [senderId], references: [id])
+  recipient User @relation("received_options", fields: [recipientId], references: [id])
+
+  session     Session? @relation(fields: [sessionId], references: [id])
+  senderId    String
+  recipientId String
+
+  @@map("option")
+}
